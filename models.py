@@ -1,5 +1,4 @@
-"""
-This contains the routines that return both the DeltaSigma and boost factor
+"""This contains the routines that return both the DeltaSigma and boost factor
 profiles.
 """
 import numpy as np
@@ -23,7 +22,7 @@ def model_swap(params, args):
         return params
     raise Exception("Model %s not implemented yet."%name)
 
-def get_delta_sigma_profile(log10M, c, tau, fmis, Am, args):
+def get_delta_sigma_profile(log10M, c, tau, fmis, Am, B0, Rs, args):
     """Return the DeltaSigma(R) profile. Note that this does not compute
     the profile in averaged angular bins. It computes the continuous profile
     at a finely sampled range of radii in units of Mph/h, supplied in
@@ -36,6 +35,8 @@ def get_delta_sigma_profile(log10M, c, tau, fmis, Am, args):
             distribution is of miscentered clusters (Rmis/R_lambda)
         fmis (float): Fraction of clusters that are miscentered
         Am (float): Multiplicative bias (shear+photoz)
+        B0 (float): Boost factor amplitude
+        Rs (float): Boost factor scale radius (Mpc physical)
         args (dict): Contains all extra information used for the computation
 
     Returns:
@@ -76,7 +77,21 @@ def get_delta_sigma_profile(log10M, c, tau, fmis, Am, args):
     #Apply the multiplicative bias and reduced shear
     full_DeltaSigma *= Am/(1 - full_Sigma*Sigma_crit_inv)
 
-    return full_DeltaSigma #hMsun/pc^2
+    #Compute and apply the boost factor
+    #Note the unit change for Rs
+    boost = ct.boostfactors.boost_nfw_at_R(Rp, B0, Rs*h*(1+z))
+    full_DeltaSigma /= boost
+
+    #Average within the bins
+    Redges = args['Redges'] #Mpc/h comoving
+    ave_DeltaSigma = ct.averaging.average_profile_in_bins(Redges, Rp, full_DeltaSigma)
+
+    #Change units
+    ave_DeltaSigma *= h*(1+z)**2 #Msun/pc^2 physical
+
+    #Pick out the useful indices given the scale cuts, and return
+    inds = args['inds']
+    return ave_DeltaSigma[inds] #Msun/pc^2 physical
 
 def get_boost_model_NFW(B0, Rs, Rp):
     """Return the NFW boost factor model. Note that it is assumed that
