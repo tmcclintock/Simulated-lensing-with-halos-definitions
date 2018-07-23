@@ -2,7 +2,6 @@
 """
 import numpy as np
 from models import *
-import cluster_toolkit as ct
 
 def lnprior(params, args):
     """Log prior on the parameters, P(theta)
