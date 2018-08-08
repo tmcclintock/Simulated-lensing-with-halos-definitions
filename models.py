@@ -20,6 +20,10 @@ def model_swap(params, args):
     """
     if args['name'] == 'full':
         return params
+    if args['name'] == 'basic_sim':
+        log10M, c = params
+        tau, fmis, Am, B0, Rs = 1., 1., 1., 1., 1.
+        return log
     raise Exception("Model %s not implemented yet."%name)
 
 def get_delta_sigma_profile(log10M, c, tau, fmis, Am, B0, Rs, args):
@@ -66,6 +70,8 @@ def get_delta_sigma_profile(log10M, c, tau, fmis, Am, B0, Rs, args):
     DeltaSigma = ct.deltasigma.DeltaSigma_at_R(Rp, Rp, Sigma, M, c, Omega_m)
 
     #Compute miscentered projected profiles; hMsun/pc^2
+    #REMOVED, NOT IN RAFAEL'S SIMULATIONS
+    """
     Rmis = tau*Rlam #Mpc/h comoving
     Sigma_mis = ct.miscentering.Sigma_mis_at_R(Rp, Rp, Sigma, M, c, Omega_m, Rmis, kernel='exponential') #use the kernel from DES Y1
     DeltaSigma_mis = ct.miscentering.DeltaSigma_mis_at_R(Rp, Rp, Sigma_mis)
@@ -81,6 +87,9 @@ def get_delta_sigma_profile(log10M, c, tau, fmis, Am, B0, Rs, args):
     #Note the unit change for Rs
     boost = ct.boostfactors.boost_nfw_at_R(Rp, B0, Rs*h*(1+z))
     full_DeltaSigma /= boost
+    """
+    full_Sigma = Sigma
+    full_DeltaSigma = DeltaSigma
 
     #Average within the bins
     Redges = args['Redges'] #Mpc/h comoving

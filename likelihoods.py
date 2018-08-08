@@ -69,4 +69,4 @@ def lnpost(params, args):
     full_params = model_swap(params, args)
     lpr = lnprior(full_params, args)
     if not np.isfinite(lpr): return -1e99
-    return lpr + lnlike(pars, args)
+    return lpr + lnlike(full_params, args)
