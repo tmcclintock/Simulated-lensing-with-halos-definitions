@@ -159,7 +159,7 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     #Add the DeltaSigma data vector
     mass_lim_labels = ["3e12_5e12", "5e12_9e12", "9e12_2e13", "2e13_6e13", "6e13_2e14", "2e14_5e14", "5e14_5e15"]
     lab = mass_lim_labels[fox_lambda_index]
-    DS = np.loadtxt("meanDeltaSigma_i%d_%s_z%.1f"%(perc_index, lab, z)) #h Msun/pc^2 comoving
+    DS = np.loadtxt("fixedmeanDeltaSigma_i%d_%s_z%.1f"%(perc_index, lab, z)) #h Msun/pc^2 comoving
     DS *= h*(1+z)**2 #Msun/pc^2 physical
     args['ds'] = DS[inds] #take only the useful indices
 
