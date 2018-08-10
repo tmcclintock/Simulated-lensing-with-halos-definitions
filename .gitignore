@@ -1,3 +1,6 @@
+# numpy files used to save MCMC chains
+*.npy
+
 # emacs backup files
 *~
 

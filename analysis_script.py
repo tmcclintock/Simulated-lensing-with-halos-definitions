@@ -61,16 +61,16 @@ def main():
 
     print "Performing MCMC"
     nwalkers = 8
-    nsteps = 100
+    nsteps = 2
     ndim = len(guess)
     pos = [result['x'] + 1e-3*np.random.randn(ndim) for k in range(nwalkers)]
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnpost, args=(args,), threads=4)
-    """sampler.run_mcmc(pos, nsteps)
+    sampler.run_mcmc(pos, nsteps)
     print "\tMCMC complete"
     print "\tnwalkers = %d\n\tnsteps per = %d"%(nwalkers, nsteps)
     np.save("chains/mcmc_chains_perc%d_fox-z-index%d_lambda-index%d"%(perc_index, fox_z_index, fox_lambda_index), sampler.flatchain)
     np.save("chains/mcmc_likes_perc%d_fox-z-index%d_lambda-index%d"%(perc_index, fox_z_index, fox_lambda_index), sampler.flatlnprobability)
-    """
+    
     
 if __name__ == "__main__":
     main()
