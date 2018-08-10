@@ -22,8 +22,8 @@ def model_swap(params, args):
         return params
     if args['name'] == 'basic_sim':
         log10M, c = params
-        tau, fmis, Am, B0, Rs = 1., 1., 1., 1., 1.
-        return log
+        tau, fmis, Am, B0, Rs = 1., 0.3, 1., 1., 1.
+        return np.array([log10M, c, tau, fmis, Am, B0, Rs])
     raise Exception("Model %s not implemented yet."%name)
 
 def get_delta_sigma_profile(log10M, c, tau, fmis, Am, B0, Rs, args):

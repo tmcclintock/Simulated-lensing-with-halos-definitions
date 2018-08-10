@@ -15,7 +15,7 @@ def lnprior(params, args):
     """
     log10M, c, tau, fmis, Am, B0, Rs = params
     #Prior edges
-    if log10M < 11. or log10M > 18 or c <= 0. or c >= 20. or Am <= 0. or tau <= 0. or fmis <= 0. or fmis >= 1.: return -np.inf
+    if log10M < 11. or log10M > 18 or c <= 0. or Am <= 0. or tau <= 0. or fmis <= 0. or fmis >= 1.: return -np.inf
     if Rs <= 0.0 or B0 < 0.0 or Rs > 100.: return -np.inf
     #Gaussian priors on fmis, tau and Am
     Am_prior = args['Am_prior']
@@ -41,7 +41,7 @@ def lnlike(params, args):
     #Compute the log likelihood for the DeltaSigma part first
     DS = args['ds'] #DeltaSigma data; Msun/pc^2 physical
     icov = args['icov'] #Inverse covariance matrix
-    DS_model = get_delta_sigma_profile(log10M, c, tau, fmis, Am, B0, Rs)
+    DS_model = get_delta_sigma_profile(log10M, c, tau, fmis, Am, B0, Rs, args)
     X = DS-DS_model
     LLDS = -0.5*np.dot(X, np.dot(icov, X))
 

@@ -27,7 +27,7 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
         lj (int): lambda-index of the DES Y1 data set (3-6)
     """
     if not (0 <= fox_z_index <= 3): raise Exception("Invalid fox_z_inded value.")
-    if not (0 <=fox_lambda_index<= 3): raise Exception("Invalid fox_lambda_inded value.")
+    if not (0 <=fox_lambda_index<= 6): raise Exception("Invalid fox_lambda_inded value.")
     if not (0 <= zi <= 1): raise Exception("Invalid zi value.")
     if not (3 <= lj <= 6): raise Exception("Invalid lj value.")
     #Create a dictionary to add things
@@ -44,9 +44,9 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     lams = np.loadtxt("Percolation_data/lambdas")
     lam = lams[fox_lambda_index]
     Rlams = (lams/100.)**0.2 #Mpc/h comoving
-    Rlam = Rlams[zi, lj]
+    Rlam = Rlams[lj]
     args['Rlam'] = Rlam
-    print "lambda = %.1f"%lam
+    print "\tlambda = %.1f"%lam
     
     #Add the cosmology
     h = cosmo['h'] #to be used in this script
@@ -65,7 +65,7 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     print "\tAm = %.3f +- %.3f"%(args['Am_prior'], args['Am_prior_var'])
 
     #Add the Sigma_crit_inverse value, after converting to pc^2/hMsun comoving
-    SCI = np.loadtxt("photoz_calibration/sigma_crit_inv.tx")[zi, lj] * h*(1+z)**2
+    SCI = np.loadtxt("photoz_calibration/sigma_crit_inv.txt")[zi, lj] * h*(1+z)**2
     args['Sigma_crit_inv'] = SCI
 
     #Add on radial bins
@@ -85,7 +85,7 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
         "Omega_b":cosmo["ob"],
         "Omega_cdm":cosmo["om"] - cosmo["ob"],
         "YHe":0.24755048455476272,#By hand, default value
-        "P_k_max_h/Mpc":3000.,
+        "P_k_max_1/Mpc":1000.,#3000.,
         "z_max_pk":1.0,
         "non linear":"halofit"}
     class_cosmo = Class()
@@ -97,8 +97,8 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     kh = k/h #h/Mpc
     args['k'] = kh
     #Call class to compute P(k,z)
-    Pnl  = np.array([cosmo.pk(ki, z) for ki in k])
-    Plin = np.array([cosmo.pk_lin(ki, z) for ki in k])
+    Pnl  = np.array([class_cosmo.pk(ki, z) for ki in k])
+    Plin = np.array([class_cosmo.pk_lin(ki, z) for ki in k])
     Pnl *= h**3 #matter power spectrum, (Mpc/h)^3
     Plin *= h**3 #linear matter power spectrum, (Mpc/h)^3
     args['Pnl'] = Pnl
@@ -114,11 +114,13 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     #Note that the bin edges are defined in Mpc physical
     Nbins = 15
     Redges = np.logspace(np.log10(0.0323), np.log10(30.), num=Nbins+1)
+    Rmid = (Redges[:-1] + Redges[1:])/2.
+    print Rmid
     args['Redges'] = Redges*h*(1+z) #converted to Mpc/h comoving
 
     #Add the indices used for scale cuts
     #Note: no upper limit scale cut
-    inds = (Redges > 0.2) * (Redges < 9999) #0.2 Mpc physical scale cut
+    inds = (Rmid > 0.2) * (Rmid < 9999) #0.2 Mpc physical scale cut
     args['inds'] = inds
 
     #Add the covariance matrix
@@ -131,15 +133,15 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     cov = cov[:,inds]
     #Apply the hartlap correction
     Njk = 100.
-    D = len(Redges[inds])
+    D = len(Rmid[inds])
     cov *= (Njk-1)/(Njk-D-2)
     print "\tlen(DeltaSigma) = %d\n\tNjk = %d"%(D, Njk)
     icov = np.linalg.inv(cov)
     args['icov'] = icov #(pc^2/Msun physical)^2
 
     #Add the boost factor data
-    boostpath = y1base+"FINAL_FILES/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost.dat"%(lj, zi)
-    bcovpath = y1base+"FINAL_FILES/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost_cov.dat"%(lj, zi)
+    boostpath = y1base+"/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost.dat"%(lj, zi)
+    bcovpath = y1base+"/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost_cov.dat"%(lj, zi)
     Bcov = np.loadtxt(bcovpath)
     Rb, Bp1, Be = np.genfromtxt(boostpath, unpack=True) #Rb is Mpc physical
     Becut = (Be > 1e-6)*(Rb > 0.2) #Some boost factors are 0. Exclude those
@@ -159,7 +161,7 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     #Add the DeltaSigma data vector
     mass_lim_labels = ["3e12_5e12", "5e12_9e12", "9e12_2e13", "2e13_6e13", "6e13_2e14", "2e14_5e14", "5e14_5e15"]
     lab = mass_lim_labels[fox_lambda_index]
-    DS = np.loadtxt("fixedmeanDeltaSigma_i%d_%s_z%.1f"%(perc_index, lab, z)) #h Msun/pc^2 comoving
+    DS = np.loadtxt("Percolation_data/fixedmeanDeltaSigma_i%d_%s_z%.1f"%(perc_index, lab, z)) #h Msun/pc^2 comoving
     DS *= h*(1+z)**2 #Msun/pc^2 physical
     args['ds'] = DS[inds] #take only the useful indices
 
