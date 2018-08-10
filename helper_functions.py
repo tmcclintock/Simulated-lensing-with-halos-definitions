@@ -15,13 +15,14 @@ foxcosmo = {'h'      : 0.6704,
 #Choose the fox cosmology
 cosmo = foxcosmo
 
-def get_arguments(fox_z_index, fox_lambda_index, zi, lj):
+def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     """Creates the arguments dictionary that is passed around
     the various functions.
 
     Args:
+        perc_index (int): index of the percolation model (0-3)
         fox_z_index (int): z-index for the fox snapshots (0-3)
-        fox_lambda_index (int): lambda-index for the fox richness bins
+        fox_lambda_index (int): lambda-index for the fox richness bins (0-6)
         zi (int): z-index of the DES Y1 data set (0-1), zi=2 should NOT be used in fox
         lj (int): lambda-index of the DES Y1 data set (3-6)
     """
@@ -40,8 +41,8 @@ def get_arguments(fox_z_index, fox_lambda_index, zi, lj):
     print "\tz = %.2f"%z
 
     #Add the richnesses and compure R_lambda (Rlam) in Mpc/h comoving
-    lams = np.loadtxt(LAMBDA_PATH)
-    lam = lams[something]
+    lams = np.loadtxt("Percolation_data/lambdas")
+    lam = lams[fox_lambda_index]
     Rlams = (lams/100.)**0.2 #Mpc/h comoving
     Rlam = Rlams[zi, lj]
     args['Rlam'] = Rlam
@@ -156,5 +157,10 @@ def get_arguments(fox_z_index, fox_lambda_index, zi, lj):
     args['Bp1'] = Bp1
 
     #Add the DeltaSigma data vector
+    mass_lim_labels = ["3e12_5e12", "5e12_9e12", "9e12_2e13", "2e13_6e13", "6e13_2e14", "2e14_5e14", "5e14_5e15"]
+    lab = mass_lim_labels[fox_lambda_index]
+    DS = np.loadtxt("meanDeltaSigma_i%d_%s_z%.1f"%(perc_index, lab, z)) #h Msun/pc^2 comoving
+    DS *= h*(1+z)**2 #Msun/pc^2 physical
+    args['ds'] = DS[inds] #take only the useful indices
 
     return args
