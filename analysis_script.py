@@ -48,7 +48,7 @@ def main():
     log10mass = np.log10(mass)
     guess = np.array([log10mass, concentration])
     print "\tTest call of lnpost()=",lnpost(guess, args)
-
+    exit
     print "Finding best fit parameters"
     nll = lambda *args: -lnpost(*args)
     result = op.minimize(nll, guess, args=(args,), tol=1e-3)

@@ -124,10 +124,11 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     args['inds'] = inds
 
     #Add the covariance matrix
-    fullbase = "/Users/tmcclintock/Data" #laptop
+    #fullbase = "/Users/tmcclintock/Data" #laptop
     #fullbase = "/calvin1/tmcclintock/DES_DATA_FILES" #calvin
-    y1base = fullbase+"/DATA_FILES/y1_data_files/FINAL_FILES/"
-    covpath = y1base+"SACs/SAC_z%d_l%d.txt"%(zi, lj)
+    #y1base = fullbase+"/DATA_FILES/y1_data_files/FINAL_FILES/"
+    covpath = "SACs/SAC_z%d_l%d.txt"%(zi, lj)
+    #y1base+"SACs/SAC_z%d_l%d.txt"%(zi, lj)
     cov = np.genfromtxt(covpath)
     cov = cov[inds]
     cov = cov[:,inds]
@@ -140,8 +141,10 @@ def get_arguments(perc_index, fox_z_index, fox_lambda_index, zi, lj):
     args['icov'] = icov #(pc^2/Msun physical)^2
 
     #Add the boost factor data
-    boostpath = y1base+"/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost.dat"%(lj, zi)
-    bcovpath = y1base+"/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost_cov.dat"%(lj, zi)
+    #boostpath = y1base+"/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost.dat"%(lj, zi)
+    #bcovpath = y1base+"/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost_cov.dat"%(lj, zi)
+    boostpath = "boostfactors/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost.dat"%(lj, zi)
+    bcovpath = "boostfactors/full-unblind-v2-mcal-zmix_y1clust_l%d_z%d_zpdf_boost_cov.dat"%(lj, zi)
     Bcov = np.loadtxt(bcovpath)
     Rb, Bp1, Be = np.genfromtxt(boostpath, unpack=True) #Rb is Mpc physical
     Becut = (Be > 1e-6)*(Rb > 0.2) #Some boost factors are 0. Exclude those
